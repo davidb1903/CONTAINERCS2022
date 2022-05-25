@@ -1,0 +1,12 @@
+#define PIN_CAMARA 25
+#define PIN_SERVOPAR 27
+#define PIN_SERVOPAY 14
+#define PIN_BUZZER 15
+#define PIN_MOTORD 2
+#define PIN_MOTORI 4
+#define INIT_PAR 15
+#define INIT_PAY 0
+#define LIB_PAR 65
+#define LIB_PAY 90
+#define PAYLOAD_ALT_LIB 300
+#define GROUND_ALT 5
