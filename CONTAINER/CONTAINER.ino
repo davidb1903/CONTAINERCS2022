@@ -80,7 +80,7 @@ void loop() {
       }
       break;
     case 1:
-      if (sensorRead[1] < alt_buffer) { //Condicional Descenso
+      if (sensorRead[1]- alt_buffer<abs(4)) { //Condicional Descenso
         state_f = 2;
         preferences.begin("CONTAINER", false);
         preferences.putUInt("fstate", state_f);
@@ -356,7 +356,7 @@ void TaskPayloadLib(void *pvParameters) {
   digitalWrite(PIN_MOTORD, LOW);
   digitalWrite(PIN_MOTORI, HIGH);
   //
-  vTaskDelayUntil(&lasttick, 20000 / portTICK_RATE_MS);
+  vTaskDelayUntil(&lasttick, 1000 / portTICK_RATE_MS);
   digitalWrite(PIN_MOTORD, LOW);
   digitalWrite(PIN_MOTORI, LOW);
   state_p = 2;
@@ -386,3 +386,4 @@ void appendFile(fs::FS &fs, const char * path, const char * message) {
   File file = fs.open(path, FILE_APPEND);
   file.close();
 }*/
+
