@@ -91,7 +91,6 @@ void loop() {
       if (sensorRead[1] < 400) { //Condicional Segundo paracaidas
         state_f = 3;
         servo_paracaidas.write(22);//
-        servo_paracaidas.detach();
         preferences.begin("CONTAINER", false);
         preferences.putUInt("fstate", state_f);
         preferences.end();
@@ -101,7 +100,6 @@ void loop() {
       if (sensorRead[1] < 310) { //Condicional Payload
         state_f = 4;
         servo_payload.write(180);
-        servo_payload.detach();
         Serial1.print('A');
         xTaskCreate(TaskPayloadLib, "TaskPayloadLib", 2048, NULL, 12, NULL);
         preferences.begin("CONTAINER", false);
@@ -112,7 +110,7 @@ void loop() {
     case 4:
       while (Serial1.available() > 0 ) {
         char cmd_char = Serial1.read();
-        if (cmd_char == 'P') {
+        if (cmd_char == 'X') {
           Serial.print("1017");
           Serial.print(',');
           Serial.print(sensorRead[11], 0);
@@ -129,7 +127,9 @@ void loop() {
           Serial.print(cmd_char);
         }
       }
-      if (sensorRead[1] < 10) { //Condicional Aterrizaje
+      if (sensorRead[1] < 20) { //Condicional Aterrizaje
+        Serial1.print('B');
+        Serial1.print('B');
         state_f = 5;
         preferences.begin("CONTAINER", false);
         preferences.putUInt("fstate", state_f);
@@ -139,13 +139,31 @@ void loop() {
     case 5:
       digitalWrite(15, HIGH);
       digitalWrite(PIN_CAMARA, HIGH);
-      Serial1.print('B');
-      Serial1.print('B');
-      state_p = 3;
-      vTaskDelete(TaskHandle_Serial);
+        while (Serial1.available() > 0 ) {
+        char cmd_char = Serial1.read();
+        if (cmd_char == 'X') {
+          Serial.print("1017");
+          Serial.print(',');
+          Serial.print(sensorRead[11], 0);
+          Serial.print(':');
+          Serial.print(sensorRead[12], 0);
+          Serial.print(':');
+          Serial.print(sensorRead[13], 2);
+          Serial.print(',');
+          Serial.print(payload_countp++);
+          Serial.print(',');
+          Serial.print('T');
+          Serial.print(',');
+        } else {
+          Serial.print(cmd_char);
+        }
+      }
       delay(5000);
+      vTaskDelete(TaskHandle_Serial);
       digitalWrite(PIN_CAMARA, LOW);
+      vTaskDelete(NULL);
       break;
+      
     default:
       break;
   }
@@ -206,12 +224,14 @@ void validation_comand(char cmd_char) {
       break;
     case 'B':
             tel_status = 0;
+        Serial1.print('B');
         cmd_in = 1;
         vTaskDelete(TaskHandle_Serial);
     break;
 
     case 'D':     // SIMENABLE
           cmd_in=10;
+      Serial1.print('B');
       Serial1.print('B');
       //MODE = 'S';
       //cmd_in = 3;
@@ -255,8 +275,9 @@ void validation_comand(char cmd_char) {
       break;
     case 'P':
       cmd_in=10;
-      /*Serial1.print('A');*/
-      xTaskCreate(TaskPayloadLib, "TaskPayloadLib", 2048, NULL, 12, NULL);
+      Serial1.print('A');
+      Serial1.print('A');
+      /*xTaskCreate(TaskPayloadLib, "TaskPayloadLib", 2048, NULL, 12, NULL);*/
       break;
     default:
       servo_paracaidas.write(0);
@@ -356,10 +377,12 @@ void TaskPayloadLib(void *pvParameters) {
   digitalWrite(PIN_MOTORD, LOW);
   digitalWrite(PIN_MOTORI, HIGH);
   //
-  vTaskDelayUntil(&lasttick, 1000 / portTICK_RATE_MS);
+  vTaskDelayUntil(&lasttick, 5000 / portTICK_RATE_MS);
   digitalWrite(PIN_MOTORD, LOW);
   digitalWrite(PIN_MOTORI, LOW);
-  state_p = 2;
+
+  Serial1.print('C');
+  Serial1.print('C');
   vTaskDelete(NULL);
 }
 /*
@@ -386,4 +409,3 @@ void appendFile(fs::FS &fs, const char * path, const char * message) {
   File file = fs.open(path, FILE_APPEND);
   file.close();
 }*/
-
